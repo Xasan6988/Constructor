@@ -1,29 +1,3 @@
-/*
-	new Swiper('.swiper-container', {
-		loop: true,
-		navigation: {
-			nextEl: '.arrow',
-		},
-		breakpoints: {
-			320: {
-				slidesPerView: 1,
-				spaceBetween: 20
-			},
-			541: {
-				slidesPerView: 2,
-				spaceBetween: 40
-			}
-		}
-	});
-
-	const menuButton = document.querySelector('.menu-button');
-	const menu = document.querySelector('.header');
-	menuButton.addEventListener('click', function () {
-		menuButton.classList.toggle('menu-button-active');
-		menu.classList.toggle('header-active');
-	})
-*/
-
 // функция, возвращающая элемент, созданный по переданным аргументам
 const getElement = (tagName, classNames, attributes) => {
 	const element = document.createElement(tagName);
@@ -62,6 +36,14 @@ const createHeader = ({title, header: {logo, social, menu}}) => {
 			navList.append(a);
 			wrapper.append(navList);
 		}
+		// добавление бургер-меню
+
+		const burger = getElement('button', ['menu-button']);
+		burger.addEventListener('click', () => {
+		burger.classList.toggle('menu-button-active')
+		wrapper.classList.toggle('header-active');
+		});
+		container.append(burger);
 	}
 	// кнопки соцсетей
 	if (social) {
@@ -84,22 +66,13 @@ const createHeader = ({title, header: {logo, social, menu}}) => {
 	header.append(container);
 	container.append(wrapper);
 
-	// добавление бургер-меню
-	const burger = getElement('button', ['menu-button']);
-	burger.addEventListener('click', () => {
-		burger.classList.toggle('menu-button-active')
-		wrapper.classList.toggle('header-active');
-	});
-
-	container.append(burger);
-
-
 	return header;
 };
 // функция создания главного блока сайта
 const createMain = ({
 	title,
-	main: {genre, rating, description,	trailer}}) => {
+	main: {genre, rating, description,	trailer, slider}
+}) => {
 
 		// создание обёрток
 		const main = getElement('main');
@@ -173,6 +146,62 @@ const createMain = ({
 			youtubeImageLink.append(iconPlay);
 			wrapper.append(youtubeImageLink);
 		}
+		// создание слайдера
+		if (slider) {
+			const sliderBlock = getElement('div', ['series']);
+			const swiperBlock = getElement('div', ['swiper-container']);
+			const swiperWrapper = getElement('div', ['swiper-wrapper']);
+			const arrow = getElement('button', ['arrow']);
+
+			// создание отдельных слайдов
+			const slides = slider.map(item => {
+
+				const swiperSlide = getElement('div', ['swiper-slide']);
+				const card = getElement('figure', ['card']);
+				const cardImage = getElement('img', 'card-img', {
+					src: item.img,
+					alt: ((item.title || '') + ' ' + (item.subtitle || '')).trim(),
+				});
+
+				card.append(cardImage);
+
+				if (item.title || item.subtitle) {
+					const cardDescription= getElement('figcaption', ['card-description']);
+					cardDescription.innerHTML = `
+					${item.subtitle ? `<p class="card-subtitle">${item.subtitle}</p>` : ''}
+					${item.title ? `<p class="card-title">${item.title}</p>` : ''}
+					`;
+
+					card.append(cardDescription);
+				}
+				swiperSlide.append(card);
+				return swiperSlide;
+			});
+
+			swiperWrapper.append(...slides);
+			swiperBlock.append(swiperWrapper);
+			sliderBlock.append(swiperBlock, arrow);
+
+			container.append(sliderBlock);
+			// инициализация плагина слайдера
+			new Swiper(swiperBlock, {
+				loop: true,
+				navigation: {
+					nextEl: arrow,
+				},
+				breakpoints: {
+					320: {
+						slidesPerView: 1,
+						spaceBetween: 20
+					},
+					541: {
+						slidesPerView: 2,
+						spaceBetween: 40
+					}
+				}
+			});
+
+		}
 
 		return main;
 };
@@ -191,11 +220,16 @@ const movieConstructor = (selector, options) => {
 			`url("${options.background}")`:
 			'';
 	}
-
+	// фавиконка
 	if (options.favicon) {
+		const index = options.favicon.lastIndexOf('.');
+		const type = options.favicon.slice(index + 1);
+
+
 		const favicon = getElement('link', [], {
 			rel: 'icon',
 			href: options.favicon,
+			type: 'image/' + (type === 'svg' ? 'svg-xml' : type),
 		});
 		document.querySelector('head').append(favicon);
 	}
@@ -254,5 +288,27 @@ movieConstructor('.app', {
 		rating: '8',
 		description: 'Ведьмак Геральт, мутант и убийца чудовищ, на своей верной лошади по кличке Плотва путешествует по Континенту. За тугой	мешочек чеканных монет этот мужчина избавит вас от всякой настырной нечисти — хоть от чудищ болотных, оборотней и даже заколдованных принцесс.',
 		trailer: 'https://www.youtube.com/watch?v=P0oJqfLzZzQ',
+		slider: [
+			{
+				img: 'witcher/series/series-1.jpg',
+				title: 'Начало конца',
+				subtitle: 'Серия №1',
+			},
+			{
+				img: 'witcher/series/series-2.jpg',
+				title: 'Четыре марки',
+				subtitle: 'Серия №2',
+			},
+			{
+				img: 'witcher/series/series-3.jpg',
+				title: 'Предательская луна',
+				subtitle: 'Серия №3',
+			},
+			{
+				img: 'witcher/series/series-4.jpg',
+				title: 'Банкеты, ублюдки и похороны',
+				subtitle: 'Серия №4',
+			},
+		],
 	},
 });
