@@ -23,6 +23,8 @@
 		menu.classList.toggle('header-active');
 	})
 */
+
+// функция, возвращающая элемент, созданный по переданным аргументам
 const getElement = (tagName, classNames, attributes) => {
 	const element = document.createElement(tagName);
 	if (classNames) {
@@ -35,35 +37,36 @@ const getElement = (tagName, classNames, attributes) => {
 	}
 	return element;
 };
-
-const createHeader = (param) => {
+// функция создания хэдера
+const createHeader = ({title, header: {logo, social, menu}}) => {
 	const header = getElement('header');
 	const container = getElement('div', ['container']);
 	const wrapper = getElement('div', ['header']);
 
-	if (param.header.logo) {
-		const logo = getElement('img', ['logo'], {
-			src: param.header.logo,
-			alt: 'Логотип ' + param.title,
+	// лого сайта
+	if (logo) {
+		const logoImg = getElement('img', ['logo'], {
+			src: logo,
+			alt: 'Логотип ' + title,
 		});
-		wrapper.append(logo);
+		wrapper.append(logoImg);
 	}
-
-	if (param.header.menu) {
-		const menu = getElement('nav', ['menu-list']);
-		for (let elem of param.header.menu) {
+	// меню хэдера
+	if (menu) {
+		const navList = getElement('nav', ['menu-list']);
+		for (let elem of menu) {
 			const a = getElement('a', ['menu-link'], {
 				href: elem.link,
 				textContent: elem.title,
 			});
-			menu.append(a);
-			wrapper.append(menu);
+			navList.append(a);
+			wrapper.append(navList);
 		}
 	}
-
-	if (param.header.social) {
+	// кнопки соцсетей
+	if (social) {
 		const socialWrapper = getElement('div', ['social']);
-		const allSocial = param.header.social.map(item => {
+		const allSocial = social.map(item => {
 			const socialLink = getElement('a', ['social-link']);
 			socialLink.append(getElement('img', [], {
 				src: item.image,
@@ -78,22 +81,37 @@ const createHeader = (param) => {
 		wrapper.append(socialWrapper);
 	}
 
-
 	header.append(container);
 	container.append(wrapper);
 
+	// добавление бургер-меню
+	const burger = getElement('button', ['menu-button']);
+	burger.addEventListener('click', () => {
+		burger.classList.toggle('menu-button-active')
+		wrapper.classList.toggle('header-active');
+	});
+
+	container.append(burger);
+
+
 	return header;
 };
-
+// функция создания главного блока сайта
 const createMain = ({
 	title,
 	main: {genre, rating, description,	trailer}}) => {
 
+		// создание обёрток
 		const main = getElement('main');
 		const container = getElement('div', ['container']);
 		const wrapper = getElement('div', ['main-content']);
 		const content = getElement('div', ['content']);
 
+		main.append(container);
+		container.append(wrapper);
+		wrapper.append(content);
+
+		// жанр, рэйтинг, заголовок, описание
 		if (genre) {
 			const span = getElement('span', ['genre', 'animated', 'fadeInRight'], {
 				textContent: genre,
@@ -121,61 +139,82 @@ const createMain = ({
 		}
 
 		if (title) {
-			const h1 = getElement('h1', ['main-title', 'animated', 'fadeInRight'], {
+			content.append(getElement('h1', ['main-title', 'animated', 'fadeInRight'], {
 				textContent: title,
-			});
-			content.append(h1);
+			}));
 		}
 
 		if (description) {
-			const p = getElement('p', ['main-description', 'animated', 'fadeInRight'], {
+			content.append(getElement('p', ['main-description', 'animated', 'fadeInRight'], {
 				textContent: description,
-			});
-			content.append(p);
+			}));
 		}
-
+		// трейлер
 		if (trailer) {
-			const link = getElement('a', ['button', 'animated', 'fadeInRight'], {
+			const youtubeLink = getElement('a',
+				['button', 'animated', 'fadeInRight', 'youtube-modal'], {
+					href: trailer,
+					textContent: 'Смотреть трейлер',
+				}
+			);
+
+			const youtubeImageLink = getElement('a', ['play', 'youtube-modal'], {
 				href: trailer,
-				textContent: 'Смотреть трейлер',
+				ariaLabel: 'Смотреть трейлер',
 			});
-			content.append(link);
+
+			const iconPlay = getElement('img', ['play-img'], {
+				src: 'img/play.svg',
+				alt: 'play',
+				ariaHidden: true,
+			});
+
+			content.append(youtubeLink);
+			youtubeImageLink.append(iconPlay);
+			wrapper.append(youtubeImageLink);
 		}
-		main.append(container);
-		container.append(wrapper);
-		wrapper.append(content);
 
 		return main;
 };
-
+// конструктор всего сайта
 const movieConstructor = (selector, options) => {
 	const app = document.querySelector(selector);
 	app.classList.add('body-app');
 
+	// тайтл страницы
 	if (options.title) {
 		document.querySelector('title').textContent = options.title;
 	}
-
+	// бэкграунд
 	if (options.background) {
 		app.style.backgroundImage = options.background ?
 			`url("${options.background}")`:
 			'';
 	}
 
+	if (options.favicon) {
+		const favicon = getElement('link', [], {
+			rel: 'icon',
+			href: options.favicon,
+		});
+		document.querySelector('head').append(favicon);
+	}
 
+	// создание хэдэра
 	if (options.header) {
 		app.append(createHeader(options));
 	}
-
+	// создание главного блока
 	if (options.main) {
 		app.append(createMain(options));
 	}
 };
 
-
+// Инициализация конструктора
 movieConstructor('.app', {
 	title: 'Ведьмак',
 	background: 'witcher/background.jpg',
+	favicon: 'witcher/logo.png',
 	header: {
 		logo: 'witcher/logo.png',
 		social: [
