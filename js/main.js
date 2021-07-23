@@ -297,13 +297,13 @@ const movieConstructor = (selector, options) => {
 };
 
 // Инициализация конструктора
-movieConstructor('.app', {
+movieConstructor('body', {
 	title: 'Ведьмак',
 	background: 'witcher/background.jpg',
 	favicon: 'witcher/logo.png',
 	fontColor: '#ffffff',
 	backgroundColor: '#141218',
-	subColor: '#9029292',
+	subColor: '#9D2929',
 	header: {
 		logo: 'witcher/logo.png',
 		social: [
