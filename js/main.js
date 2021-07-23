@@ -205,10 +205,58 @@ const createMain = ({
 
 		return main;
 };
+// функция создания футера
+const createFooter = ({footer: {copyright, links}}) => {
+	// контейнеры
+	const footer = getElement('footer', ['footer']);
+	const container = getElement('div', ['container']);
+	const content = getElement('div', ['footer-content']);
+	const left = getElement('div', ['left']);
+	const right = getElement('div', ['right']);
+
+	footer.append(container);
+	container.append(content);
+	content.append(left, right);
+	// копирайт
+	if (copyright) {
+		const span = getElement('span', ['copyright'], {
+			textContent: copyright,
+		});
+
+		left.append(span);
+	}
+	// ссылки
+	if (links) {
+		const navList = getElement('nav', ['footer-menu']);
+
+		const navLinks = links.map(item => {
+			const link = getElement('a', ['footer-link'], {
+				textContent: item.text,
+				src: item.src,
+			});
+			return link;
+		});
+
+		navList.append(...navLinks);
+		right.append(navList);
+	}
+
+	return footer;
+}
+
+
 // конструктор всего сайта
 const movieConstructor = (selector, options) => {
 	const app = document.querySelector(selector);
 	app.classList.add('body-app');
+
+	// цвета текста и бэкраунда
+	app.style.color = options.fontColor || '';
+	app.style.backgroundColor = options.backgroundColor || '';
+
+	if (options.subColor) {
+		document.documentElement.style.setProperty('--sub-color', options.subColor);
+	}
 
 	// тайтл страницы
 	if (options.title) {
@@ -242,6 +290,10 @@ const movieConstructor = (selector, options) => {
 	if (options.main) {
 		app.append(createMain(options));
 	}
+	// создание футера
+	if (options.footer) {
+		app.append(createFooter(options));
+	}
 };
 
 // Инициализация конструктора
@@ -249,6 +301,9 @@ movieConstructor('.app', {
 	title: 'Ведьмак',
 	background: 'witcher/background.jpg',
 	favicon: 'witcher/logo.png',
+	fontColor: '#ffffff',
+	backgroundColor: '#141218',
+	subColor: '#9029292',
 	header: {
 		logo: 'witcher/logo.png',
 		social: [
@@ -311,4 +366,21 @@ movieConstructor('.app', {
 			},
 		],
 	},
+	footer: {
+		copyright: '© 2020 The Witcher. All right reserved.',
+		links: [
+			{
+				src: '#',
+				text: 'Privacy Policy',
+			},
+			{
+				src: '#',
+				text: 'Terms of Service',
+			},
+			{
+				src: '#',
+				text: 'Legal',
+			},
+		],
+	}
 });
